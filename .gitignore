@@ -1,0 +1,25 @@
+# Data — never commit the raw dataset or the DB (too large, and reproducible via download)
+data/raw/
+*.csv
+*.csv.gz
+*.db
+*.sqlite
+*.sqlite3
+*.parquet
+
+# Kaggle credentials — must never be committed
+kaggle.json
+.kaggle/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Reports scratch
+reports/*.tmp
+
+# OS
+.DS_Store
