@@ -153,6 +153,40 @@ def model_feature_list(df: pd.DataFrame) -> list[str]:
     return [c for c in base if c not in KFCDT_COLS]
 
 
+# --------------------------------------------------------------------------
+# LC-model features (KFCDT columns) — for the with/without comparison (3C)
+# --------------------------------------------------------------------------
+_GRADES = ["A", "B", "C", "D", "E", "F", "G"]
+GRADE_ORD = {g: i + 1 for i, g in enumerate(_GRADES)}                 # A..G -> 1..7
+SUBGRADE_ORD = {f"{g}{n}": i * 5 + n for i, g in enumerate(_GRADES)   # A1..G5 -> 1..35
+                for n in range(1, 6)}
+
+
+def add_lc_features(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    """Ordinal-encode LC's grade/sub_grade; int_rate is already numeric.
+    Returns the frame plus the list of added LC feature columns."""
+    out = df.copy()
+    out["grade_ord"] = out["grade"].map(GRADE_ORD)
+    out["subgrade_ord"] = out["sub_grade"].map(SUBGRADE_ORD)
+    return out, ["grade_ord", "subgrade_ord", "int_rate"]
+
+
+def build_tree_preprocessor(nums: list[str], cats: list[str], impute: bool):
+    """Tree-appropriate preprocessing (no scaling, full one-hot).
+
+    impute=True  -> median-impute numerics (RandomForest can't take NaN).
+    impute=False -> pass numerics through with NaN intact (XGBoost/LightGBM
+                    handle missing natively, which usually beats imputation).
+    """
+    from sklearn.compose import ColumnTransformer
+    from sklearn.impute import SimpleImputer
+    from sklearn.preprocessing import OneHotEncoder
+
+    num_tf = SimpleImputer(strategy="median") if impute else "passthrough"
+    ohe = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    return ColumnTransformer([("num", num_tf, nums), ("cat", ohe, cats)])
+
+
 def build_preprocessor(nums: list[str], cats: list[str]):
     """ColumnTransformer: median-impute + missing-indicator + scale numerics;
     constant-impute + one-hot (drop-first) categoricals. Fit on train only."""

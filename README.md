@@ -17,7 +17,9 @@ is only known after a loan is originated).
   - [x] Keep / drop / leakage column triage (`reports/data_dictionary.csv`)
 - [x] **Session 2 — label, out-of-time split, logistic baseline**
   - Baseline (out-of-time test): **ROC-AUC 0.709 · Gini 0.419 · KS 0.301**
-- [ ] Session 3 — model bake-off (LogReg → RandomForest → XGBoost/LightGBM) + expected-loss threshold
+- [x] **Session 3 — model bake-off, calibration & P&L**
+  - Winner **XGBoost** (out-of-time test): **ROC-AUC 0.720 · Gini 0.440 · KS 0.316**
+  - LC's own grade adds only **+0.005 AUC**; risk-based cutoff materially lifts realized 2016 profit
 - [ ] Session 4 — SHAP interpretability
 - [ ] Session 5 — Streamlit app + written recommendation
 
@@ -51,6 +53,44 @@ held out of training for a with/without-LC comparison (KFCDT).
 
 Code: `src/data_prep.py` (label, split, preprocessing), `src/train_baseline.py`
 (runnable), `notebooks/02_baseline_logistic.ipynb` (narrative + ROC/KS plots).
+
+### Session 3 — bake-off, calibration & P&L
+
+**Bake-off (3A).** RandomForest, XGBoost, LightGBM, each tuned with
+`RandomizedSearchCV` over a `TimeSeriesSplit(3)` (folds respect time); model
+selection by cross-validated AUC, reported out-of-time on 2016.
+
+| Model | Test AUC | Gini | KS |
+|-------|---------:|-----:|---:|
+| **XGBoost (winner)** | **0.720** | 0.440 | 0.316 |
+| LightGBM | 0.718 | 0.436 | 0.314 |
+| RandomForest | 0.708 | 0.415 | 0.298 |
+| Logistic (Session 2) | 0.709 | 0.419 | 0.301 |
+
+Boosting beats the logistic baseline only modestly (+0.011 AUC) — credit-default
+signal is largely monotonic. RandomForest *lost* to the logistic baseline
+despite far more compute: complexity ≠ accuracy.
+
+**LC-grade comparison (3C).** Refitting the winner with `grade`/`sub_grade`/
+`int_rate` adds only **+0.005 AUC** — the application-time features already
+recover almost all of LC's own risk grade.
+
+**Calibration (3B).** Time-based fold (fit ≤2014, calibrate on 2015, test 2016).
+Isotonic calibration improves Brier 0.1634 → 0.1609, but the model still
+**under-predicts 2016 risk** — concept drift the out-of-time design makes visible.
+
+**P&L backtest (3D).** Realized cashflow per loan =
+`total_pymnt + recoveries − funded_amnt` (leakage as features; used only to
+score the policy's realized outcome). Empirical LGD on 2016 defaults ≈ 63%.
+The profit-maximizing cutoff (**PD ≤ ~0.23**) declines the riskiest ~31%, cuts
+the book default rate 23% → 16%, and lifts realized profit from ~\$11M to
+~\$109M. *Caveats:* the absolute uplift is inflated by 2016 censoring (the
+shape is robust, the dollar figure optimistic); undiscounted; a 31% decline is
+commercially aggressive.
+
+Code: `src/bakeoff.py` (3A+3C), `src/calibrate_and_pnl.py` (3B+3D),
+`notebooks/03_model_bakeoff.ipynb` (narrative + figures). Tuned model binaries
+are saved to `models/` (gitignored; regenerate via the scripts).
 
 ## Dataset
 
