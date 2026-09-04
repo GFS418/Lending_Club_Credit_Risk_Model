@@ -20,7 +20,8 @@ is only known after a loan is originated).
 - [x] **Session 3 — model bake-off, calibration & P&L**
   - Winner **XGBoost** (out-of-time test): **ROC-AUC 0.720 · Gini 0.440 · KS 0.316**
   - LC's own grade adds only **+0.005 AUC**; risk-based cutoff materially lifts realized 2016 profit
-- [ ] Session 4 — SHAP interpretability
+- [x] **Session 4 — SHAP interpretability**
+  - Drivers economically sensible, no leakage/proxy in the ranking (model-risk sanity check passed)
 - [ ] Session 5 — Streamlit app + written recommendation
 
 ### Session 2 — decisions & results
@@ -91,6 +92,27 @@ commercially aggressive.
 Code: `src/bakeoff.py` (3A+3C), `src/calibrate_and_pnl.py` (3B+3D),
 `notebooks/03_model_bakeoff.ipynb` (narrative + figures). Tuned model binaries
 are saved to `models/` (gitignored; regenerate via the scripts).
+
+### Session 4 — SHAP interpretability
+
+TreeSHAP on the app-only XGBoost winner (10k-loan sample of the 2016 test set).
+The point is a model-risk sanity check, not another metric.
+
+**Top drivers** (mean |SHAP|), all economically sensible and application-time:
+`term` (60-month → higher risk) ≫ `installment`, `fico_range_high`, `dti`,
+`acc_open_past_24mths`, `annual_inc`, `inq_last_6mths`, credit-history length,
+`home_ownership_RENT`. The beeswarm confirms every **direction** matches credit
+intuition (higher FICO/income/history → lower risk; higher DTI/inquiries/recent
+credit-seeking → higher risk).
+
+**Why it matters:** (1) no post-origination feature appears anywhere — the
+column triage held; (2) no geography proxy (ZIP/state were dropped) and no
+single feature dominates implausibly — the model earns its AUC broadly, not via
+a shortcut; (3) individual scores decompose into intelligible contributions.
+This is what a model-validation review (SR 11-7) looks for.
+
+Code: `src/shap_analysis.py`, `notebooks/04_shap_interpretability.ipynb`;
+figures + `reports/shap_importance.csv` under `reports/`.
 
 ## Dataset
 
