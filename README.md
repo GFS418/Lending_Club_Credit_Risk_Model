@@ -9,6 +9,40 @@ This is a credit-risk portfolio project: model → decision → dollars. The
 central discipline is **avoiding data leakage** (never train on anything that
 is only known after a loan is originated).
 
+## Results at a glance
+
+- **Model:** calibrated **XGBoost** on application-time features only —
+  **out-of-time (2016) ROC-AUC 0.72 · Gini 0.44 · KS 0.32.**
+- **Leakage-safe & interpretable:** SHAP confirms economically sensible drivers,
+  with **no post-origination leakage and no geographic proxy** — a model-risk
+  sanity check it passes.
+- **Business impact, honestly stated:** a PD-based approve/decline policy raises
+  realized profit; a stricter-cutoff **sensitivity check** puts the defensible
+  figure at **≈ +\$35M for a ~10% decline** (the raw 2016 number was inflated by
+  censoring — and we show exactly how much).
+- **LendingClub's own grade adds only +0.005 AUC** — the model recovers LC's
+  risk assessment from raw application data.
+
+![Model bake-off — out-of-time test AUC](reports/bakeoff_comparison.png)
+
+### What this project demonstrates
+
+- **Leakage discipline** end-to-end — a documented keep/drop/leakage column
+  triage, verified all the way through with SHAP.
+- **Honest out-of-time evaluation** that *surfaces* concept drift and
+  survivorship bias rather than hiding them, with **sensitivity checks** that
+  quantify their impact.
+- **Business framing:** model → decision → dollars, via a realized-cashflow P&L
+  with its limitations stated plainly.
+- **Regulatory awareness:** geography excluded for fair lending; SHAP-based
+  adverse-action interpretability (SR 11-7-style model risk).
+- **Engineering:** reproducible scripts, out-of-time CV tuning, a serving
+  bundle, and an interactive Streamlit scorer.
+
+**Read order:** `notebooks/02` (baseline) → `03` (bake-off, calibration, P&L,
+sensitivity checks) → `04` (SHAP) · `reports/recommendation.md` (business memo) ·
+`streamlit run app.py` (interactive scorer).
+
 ## Status
 
 - [x] **Session 1 — setup & data triage**
@@ -22,7 +56,8 @@ is only known after a loan is originated).
   - LC's own grade adds only **+0.005 AUC**; risk-based cutoff materially lifts realized 2016 profit
 - [x] **Session 4 — SHAP interpretability**
   - Drivers economically sensible, no leakage/proxy in the ranking (model-risk sanity check passed)
-- [ ] Session 5 — Streamlit app + written recommendation
+- [x] **Session 5 — Streamlit app + written recommendation**
+  - Interactive scorer (`app.py`) + business memo (`reports/recommendation.md`)
 
 ### Session 2 — decisions & results
 
@@ -89,6 +124,15 @@ the book default rate 23% → 16%, and lifts realized profit from ~\$11M to
 shape is robust, the dollar figure optimistic); undiscounted; a 31% decline is
 commercially aggressive.
 
+![Approve/decline policy vs. realized profit](reports/pnl_threshold.png)
+
+**Sensitivity checks.** (1) Re-running on a stricter Dec-2015 cutoff (~10%
+censored) confirms the censoring caveat: model conclusions hold (XGBoost wins,
+LC-grade negligible), but the honest P&L uplift is **≈ +\$35M at a ~10% decline
+rate**, not +\$98M at 31%. (2) L1/elastic-net logistic match the L2 baseline AUC
+exactly and prune almost nothing — no cheap redundancy, consistent with the
+broad SHAP importance. Code: `src/sensitivity_cutoff.py`, `src/sensitivity_penalty.py`.
+
 Code: `src/bakeoff.py` (3A+3C), `src/calibrate_and_pnl.py` (3B+3D),
 `notebooks/03_model_bakeoff.ipynb` (narrative + figures). Tuned model binaries
 are saved to `models/` (gitignored; regenerate via the scripts).
@@ -105,6 +149,8 @@ The point is a model-risk sanity check, not another metric.
 intuition (higher FICO/income/history → lower risk; higher DTI/inquiries/recent
 credit-seeking → higher risk).
 
+![SHAP beeswarm](reports/shap_beeswarm.png)
+
 **Why it matters:** (1) no post-origination feature appears anywhere — the
 column triage held; (2) no geography proxy (ZIP/state were dropped) and no
 single feature dominates implausibly — the model earns its AUC broadly, not via
@@ -113,6 +159,25 @@ This is what a model-validation review (SR 11-7) looks for.
 
 Code: `src/shap_analysis.py`, `notebooks/04_shap_interpretability.ipynb`;
 figures + `reports/shap_importance.csv` under `reports/`.
+
+### Session 5 — Streamlit app & recommendation
+
+`app.py` serves the **calibrated XGBoost** as an interactive scorer: enter a loan
+application → calibrated **P(default)** → **approve/decline** at an adjustable
+cutoff (default ≈ the profit-max 0.23), with **expected loss** (PD × LGD ×
+amount) and a **per-loan SHAP waterfall** explaining the score. A handful of
+top-SHAP features are exposed as inputs; the rest use training defaults from the
+serving bundle.
+
+```bash
+python src/build_serving_model.py     # -> models/serving_bundle.joblib (once)
+streamlit run app.py                  # http://localhost:8501
+```
+
+`reports/recommendation.md` is the business memo tying it together: model →
+decision → dollars, with the model-risk limitations spelled out.
+
+**Project complete** — model → decision → dollars, leakage-safe end to end.
 
 ## Dataset
 

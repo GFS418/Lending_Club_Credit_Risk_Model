@@ -1,0 +1,29 @@
+[
+  {
+    "model": "L2 (ridge)",
+    "test_auc": 0.7087,
+    "test_gini": 0.4175,
+    "test_ks": 0.3005,
+    "n_features": 156,
+    "n_nonzero": 156,
+    "pct_kept": 100.0
+  },
+  {
+    "model": "L1 (lasso)",
+    "test_auc": 0.7087,
+    "test_gini": 0.4175,
+    "test_ks": 0.3005,
+    "n_features": 156,
+    "n_nonzero": 154,
+    "pct_kept": 98.7
+  },
+  {
+    "model": "elastic-net",
+    "test_auc": 0.7087,
+    "test_gini": 0.4175,
+    "test_ks": 0.3005,
+    "n_features": 156,
+    "n_nonzero": 156,
+    "pct_kept": 100.0
+  }
+]
