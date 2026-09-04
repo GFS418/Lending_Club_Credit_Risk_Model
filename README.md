@@ -11,15 +11,46 @@ is only known after a loan is originated).
 
 ## Status
 
-- [x] **Session 1 — setup & data triage** (in progress)
+- [x] **Session 1 — setup & data triage**
   - [x] Project scaffold, environment, download + load pipeline
-  - [ ] Download dataset (needs Kaggle token — see below)
-  - [ ] Load into SQLite, confirm shape
-  - [ ] Keep / drop / leakage column triage (fill in the table below)
-- [ ] Session 2 — target definition, train/test split, logistic baseline
+  - [x] Download dataset (Kaggle OAuth) → SQLite (2,260,701 rows × 151 cols)
+  - [x] Keep / drop / leakage column triage (`reports/data_dictionary.csv`)
+- [x] **Session 2 — label, out-of-time split, logistic baseline**
+  - Baseline (out-of-time test): **ROC-AUC 0.709 · Gini 0.419 · KS 0.301**
 - [ ] Session 3 — model bake-off (LogReg → RandomForest → XGBoost/LightGBM) + expected-loss threshold
 - [ ] Session 4 — SHAP interpretability
 - [ ] Session 5 — Streamlit app + written recommendation
+
+### Session 2 — decisions & results
+
+**Label.** `Charged Off` / `Default` → 1, `Fully Paid` → 0; all in-progress
+loans dropped so every row has a conclusive outcome. 1,345,350 finished loans,
+base default rate 19.97%.
+
+**Maturity cutoff.** Loans issued after **Dec 2016** are dropped. Recent
+vintages are heavily right-censored — 2017 loans are ~59% still `Current`, so
+their finished loans are a biased fast-resolving subsample. 2016 is ~31%
+censored but kept for its volume, with the bias documented. *A stricter cutoff
+(through 2015) remains a candidate sensitivity check.*
+
+**Out-of-time split.** Train on loans issued **≤ 2015-12** (826,606 rows),
+test on **all of 2016** (293,105 rows). Chosen over a random split because
+production always predicts the future from the past; a random split hides
+temporal drift rather than avoiding it. The design already paid off — it
+exposed a train→test default-rate jump (18.4% → 23.3%) and 12 secondary-applicant
+features that postdate the training era and are therefore unusable here.
+
+**Preprocessing** (fit on train only, via a scikit-learn `Pipeline`): median
+impute + missing-indicator + standardize for numerics; constant impute +
+one-hot (drop-first) for categoricals.
+
+**Model.** L2 (ridge) logistic regression, untuned — the floor for later
+models. No class reweighting, to keep probabilities calibrated for the
+expected-loss decision in a later session. `grade`/`sub_grade`/`int_rate` are
+held out of training for a with/without-LC comparison (KFCDT).
+
+Code: `src/data_prep.py` (label, split, preprocessing), `src/train_baseline.py`
+(runnable), `notebooks/02_baseline_logistic.ipynb` (narrative + ROC/KS plots).
 
 ## Dataset
 
