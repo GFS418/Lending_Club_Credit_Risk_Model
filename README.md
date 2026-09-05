@@ -194,7 +194,7 @@ Rejected applications are out of scope for now.
 ```bash
 # 1. Create the environment (Python 3.14, venv already scaffolded)
 python3 -m venv venv
-./venv/bin/pip install -r requirements.txt
+./venv/bin/pip install -r requirements-project.txt   # full stack; requirements.txt is the lean app runtime
 
 # 2. Give Kaggle an API token (one-time). Either:
 ./venv/bin/kaggle auth login                 # OAuth, browser prompt
@@ -229,7 +229,7 @@ select it in the notebook. `requirements-lock.txt` pins exact versions.
 │   └── lc_data_dictionary.py # column descriptions + leakage flags
 ├── reports/
 │   └── data_dictionary.*     # generated: annotated triage worksheet
-├── requirements.txt / requirements-lock.txt
+├── requirements.txt (lean app runtime) / requirements-project.txt (full) / requirements-lock.txt
 ```
 
 ## The leakage rule

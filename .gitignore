@@ -10,9 +10,12 @@ data/raw/
 # ...but DO keep the small generated reports (data dictionary + triage decisions)
 !reports/*.csv
 
-# Trained model binaries — large, reproducible from code
-models/
+# Trained model binaries — large, reproducible from code. Exception: the small
+# serving bundle ships so the deployed Streamlit app can load it (it can't be
+# rebuilt on the host, which has no database).
+models/*
 *.joblib
+!models/serving_bundle.joblib
 
 # Kaggle credentials — must never be committed
 kaggle.json
