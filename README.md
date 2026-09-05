@@ -35,7 +35,8 @@ is only known after a loan is originated).
 - **Business framing:** model → decision → dollars, via a realized-cashflow P&L
   with its limitations stated plainly.
 - **Regulatory awareness:** geography excluded for fair lending; SHAP-based
-  adverse-action interpretability (SR 11-7-style model risk).
+  adverse-action interpretability (SR 11-7-style model risk). See the
+  [fair-lending methodology](reports/fair_lending.md).
 - **Engineering:** reproducible scripts, out-of-time CV tuning, a serving
   bundle, and an interactive Streamlit scorer.
 

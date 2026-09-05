@@ -58,7 +58,8 @@ mature data the honest optimum is a much gentler ~10% decline for ~+\$35M.**
    business would likely choose a gentler operating point off the profit curve
    (`reports/pnl_sweep.csv`).
 5. **Fair lending.** Geography (ZIP/state) was deliberately excluded to avoid a
-   protected-class proxy. Any deployment needs a formal disparate-impact review.
+   protected-class proxy. Any deployment needs a formal disparate-impact review
+   — see [fair_lending.md](fair_lending.md) for the methodology.
 
 ## Why it's trustworthy
 
