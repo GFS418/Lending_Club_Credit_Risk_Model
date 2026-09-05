@@ -1,5 +1,7 @@
 # Lending Club — Credit-Risk Default Model
 
+[![CI](https://github.com/GFS418/Lending_Club_Credit_Risk_Model/actions/workflows/ci.yml/badge.svg)](https://github.com/GFS418/Lending_Club_Credit_Risk_Model/actions/workflows/ci.yml)
+
 Predict, using **only information known at loan application**, whether a
 Lending Club loan will default (charge off) rather than be repaid — then turn
 that model into an approve/decline decision with an **expected-loss / P&L**
@@ -38,7 +40,8 @@ is only known after a loan is originated).
   adverse-action interpretability (SR 11-7-style model risk). See the
   [fair-lending methodology](reports/fair_lending.md).
 - **Engineering:** reproducible scripts, out-of-time CV tuning, a serving
-  bundle, and an interactive Streamlit scorer.
+  bundle, an interactive Streamlit scorer, and a **CI-gated test suite** whose
+  leakage guard fails the build if any post-origination column reaches the model.
 
 **Read order:** `notebooks/02` (baseline) → `03` (bake-off, calibration, P&L,
 sensitivity checks) → `04` (SHAP) · `reports/recommendation.md` (business memo) ·
