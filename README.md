@@ -1,6 +1,12 @@
 # Lending Club — Credit-Risk Default Model
 
 [![CI](https://github.com/GFS418/Lending_Club_Credit_Risk_Model/actions/workflows/ci.yml/badge.svg)](https://github.com/GFS418/Lending_Club_Credit_Risk_Model/actions/workflows/ci.yml)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://lendingclubcreditriskmodel-hp6xl8f6fngj3bmfxmym29.streamlit.app)
+
+**▶ [Live demo — interactive credit scorer](https://lendingclubcreditriskmodel-hp6xl8f6fngj3bmfxmym29.streamlit.app):**
+enter a loan application → calibrated probability of default → approve/decline at
+your chosen cutoff, with a per-loan SHAP explanation. *(Free tier sleeps when
+idle; give it a few seconds to wake.)*
 
 Predict, using **only information known at loan application**, whether a
 Lending Club loan will default (charge off) rather than be repaid — then turn
